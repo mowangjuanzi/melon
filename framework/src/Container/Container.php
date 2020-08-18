@@ -32,4 +32,25 @@ class Container implements ContainerInterface
     {
 
     }
+
+    /**
+     * 在容器内注册共享绑定
+     * @param string $abstract
+     * @param $concrete
+     */
+    public function singleton(string $abstract, $concrete)
+    {
+        $this->bind($abstract, $concrete, true);
+    }
+
+    /**
+     * 在容器内注册绑定
+     * @param string $abstract
+     * @param null $concrete
+     * @param bool $shared
+     */
+    public function bind(string $abstract, $concrete = null, bool $shared = false)
+    {
+        // TODO 还没写这一块的功能
+    }
 }
