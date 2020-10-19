@@ -1,13 +1,18 @@
 <?php
 
 
-namespace Melon\Framework\Foundation;
+namespace Melon\Framework;
 
 
-use Melon\Framework\Container\Container;
+use Symfony\Component\Console\Application as ConsoleApplication;
 
-class Application extends Container
+class Application extends ConsoleApplication
 {
+    /**
+     * 版本号
+     */
+    const Version = "0.1";
+
     /**
      * 基础目录
      * @var string
@@ -21,5 +26,7 @@ class Application extends Container
     public function __construct(string $basePath)
     {
         $this->basePath = $basePath;
+
+        parent::__construct("melon", self::Version);
     }
 }

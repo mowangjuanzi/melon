@@ -1,8 +1,10 @@
 #!/usr/bin/env php
 <?php
 
+use Melon\Framework\Application;
+
 require_once __DIR__ . "/vendor/autoload.php";
 
-$app = require_once __DIR__ . "/bootstrap/app.php";
+$application = new Application(dirname(__DIR__));
 
-dd($app);
+$application->run();
