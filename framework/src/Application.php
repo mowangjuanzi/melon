@@ -20,6 +20,12 @@ class Application extends ConsoleApplication
     protected string $basePath = '';
 
     /**
+     * 配置
+     * @var array
+     */
+    protected array $config = [];
+
+    /**
      * 构造器
      * @param string $basePath
      */
@@ -28,5 +34,29 @@ class Application extends ConsoleApplication
         $this->basePath = $basePath;
 
         parent::__construct("melon", self::Version);
+
+        $this->loadConfig();
+        $this->registerCommands();
+    }
+
+    /**
+     * 加载配置
+     */
+    protected function loadConfig()
+    {
+        $dir = new \RecursiveDirectoryIterator($this->basePath . "/config");
+        foreach ($dir as $item) {
+            if ($item->isFile()) {
+                $path = $item->getPath();
+            }
+        }
+    }
+
+    /**
+     * 注册命令
+     */
+    protected function registerCommands()
+    {
+
     }
 }
