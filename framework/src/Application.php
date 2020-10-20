@@ -44,12 +44,31 @@ class Application extends ConsoleApplication
      */
     protected function loadConfig()
     {
-        $dir = new \RecursiveDirectoryIterator($this->basePath . "/config");
+        $dir = new \RecursiveDirectoryIterator($this->basePath . "/config", \FilesystemIterator::SKIP_DOTS);
         foreach ($dir as $item) {
-            if ($item->isFile()) {
-                $path = $item->getPath();
+            if ($item->isFile() && $item->getExtension() == "php") {
+                $this->config[$item->getBasename(".php")] = require $item->getPathname();
             }
         }
+    }
+
+    /**
+     * 获取配置
+     * @param string $path
+     * @return mixed
+     */
+    protected function getConfig(string $path)
+    {
+        $config = $this->config;
+        foreach (explode(".", $path) as $item) {
+            if (is_array($config) && isset($config[$item])) {
+                $config = $config[$item];
+            } else {
+                break;
+            }
+        }
+
+        return $config;
     }
 
     /**
@@ -57,6 +76,8 @@ class Application extends ConsoleApplication
      */
     protected function registerCommands()
     {
-
+        foreach ($this->getConfig("app.commands") as $item) {
+            $this->add(new $item);
+        }
     }
 }
