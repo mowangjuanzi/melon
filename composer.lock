@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "49143d2e3a306a304a902de09e552704",
+    "content-hash": "53df196149332670e84890754204ff6f",
     "packages": [
         {
             "name": "psr/container",
@@ -850,6 +850,45 @@
     ],
     "packages-dev": [
         {
+            "name": "paulxu-cn/event-ide-helper",
+            "version": "0.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/PaulXu-cn/event-ide-helper.git",
+                "reference": "4c513b36a5a9a0101c788e9b6ccb598423b33d05"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/PaulXu-cn/event-ide-helper/zipball/4c513b36a5a9a0101c788e9b6ccb598423b33d05",
+                "reference": "4c513b36a5a9a0101c788e9b6ccb598423b33d05",
+                "shasum": "",
+                "mirrors": [
+                    {
+                        "url": "https://mirrors.aliyun.com/composer/dists/%package%/%reference%.%type%",
+                        "preferred": true
+                    }
+                ]
+            },
+            "type": "library",
+            "autoload": {
+                "classmap": [
+                    "src/"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "GPL-3.0-only"
+            ],
+            "authors": [
+                {
+                    "name": "Paul Xu",
+                    "email": "dianzikdcdmain@163.com"
+                }
+            ],
+            "description": "PHP ext-Event IDE Helper",
+            "time": "2020-06-07T15:07:23+00:00"
+        },
+        {
             "name": "symfony/var-dumper",
             "version": "v5.1.7",
             "source": {
@@ -953,7 +992,8 @@
     "prefer-lowest": false,
     "platform": {
         "php": "^7.4",
-        "ext-event": "*"
+        "ext-event": "*",
+        "ext-sockets": "*"
     },
     "platform-dev": [],
     "plugin-api-version": "1.1.0"

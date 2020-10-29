@@ -1,7 +1,7 @@
 #!/usr/bin/env php
 <?php
 
-use Melon\Framework\Application;
+use Melon\Application;
 
 require_once __DIR__ . "/vendor/autoload.php";
 

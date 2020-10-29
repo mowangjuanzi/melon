@@ -1,13 +1,18 @@
 <?php
 
 
-namespace Melon\Framework;
+namespace Melon;
 
 
 use Symfony\Component\Console\Application as ConsoleApplication;
 
 class Application extends ConsoleApplication
 {
+    /**
+     * @var Application
+     */
+    protected static Application $instance;
+
     /**
      * 版本号
      */
@@ -34,6 +39,8 @@ class Application extends ConsoleApplication
         $this->basePath = $basePath;
 
         parent::__construct("melon", self::Version);
+
+        $this->setInstance();
 
         $this->loadConfig();
         $this->registerCommands();
@@ -79,5 +86,24 @@ class Application extends ConsoleApplication
         foreach ($this->getConfig("app.commands") as $item) {
             $this->add(new $item);
         }
+    }
+
+    /**
+     * 设置实例
+     * @return bool
+     */
+    protected function setInstance(): bool
+    {
+        self::$instance = $this;
+        return true;
+    }
+
+    /**
+     * 获取共享实例
+     * @return Application
+     */
+    public static function getInstance(): Application
+    {
+        return self::$instance;
     }
 }
