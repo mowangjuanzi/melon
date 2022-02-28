@@ -4,14 +4,26 @@
 namespace Melon;
 
 
+use FilesystemIterator;
+use Melon\Commands\ServerStartCommand;
+use Melon\Events\BaseEvent;
+use RecursiveDirectoryIterator;
 use Symfony\Component\Console\Application as ConsoleApplication;
+use Symfony\Component\Console\Output\ConsoleOutput;
 
 class Application extends ConsoleApplication
 {
     /**
+     * 应用常驻
      * @var Application
      */
     protected static Application $instance;
+
+    /**
+     * 事件
+     * @var BaseEvent
+     */
+    public readonly BaseEvent $event;
 
     /**
      * 版本号
@@ -31,6 +43,14 @@ class Application extends ConsoleApplication
     protected array $config = [];
 
     /**
+     * 内置命令列表
+     * @var array|string[]
+     */
+    protected array $commands = [
+        ServerStartCommand::class,
+    ];
+
+    /**
      * 构造器
      * @param string $basePath
      */
@@ -44,6 +64,8 @@ class Application extends ConsoleApplication
 
         $this->loadConfig();
         $this->registerCommands();
+
+        $this->registerEvent();
     }
 
     /**
@@ -51,7 +73,7 @@ class Application extends ConsoleApplication
      */
     protected function loadConfig()
     {
-        $dir = new \RecursiveDirectoryIterator($this->basePath . "/config", \FilesystemIterator::SKIP_DOTS);
+        $dir = new RecursiveDirectoryIterator($this->basePath . "/config", FilesystemIterator::SKIP_DOTS);
         foreach ($dir as $item) {
             if ($item->isFile() && $item->getExtension() == "php") {
                 $this->config[$item->getBasename(".php")] = require $item->getPathname();
@@ -64,15 +86,11 @@ class Application extends ConsoleApplication
      * @param string $path
      * @return mixed
      */
-    protected function getConfig(string $path)
+    public function getConfig(string $path): mixed
     {
         $config = $this->config;
         foreach (explode(".", $path) as $item) {
-            if (is_array($config) && isset($config[$item])) {
-                $config = $config[$item];
-            } else {
-                break;
-            }
+            $config = $config[$item] ?? null;
         }
 
         return $config;
@@ -83,8 +101,24 @@ class Application extends ConsoleApplication
      */
     protected function registerCommands()
     {
-        foreach ($this->getConfig("app.commands") as $item) {
+        foreach ($this->commands as $item) {
             $this->add(new $item);
+        }
+    }
+
+    /**
+     * 注册事件
+     * @return void
+     */
+    protected function registerEvent()
+    {
+        $event = $this->getConfig("app.event");
+
+        if (is_subclass_of($event, BaseEvent::class)) {
+            $this->event = new $event;
+        } else {
+            $output = new ConsoleOutput();
+            $output->writeln('config "app.event" value is instance \Melon\Events\BaseEvent');
         }
     }
 

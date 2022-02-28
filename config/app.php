@@ -1,8 +1,18 @@
 <?php
 
-use App\Console\ServerStartCommand;
+use Melon\Events\SelectEvent;
 
 return [
+
+    /**
+     * 监听地址 host:port
+     */
+    "listen" => '127.0.0.1:7998',
+
+    /**
+     * 公共目录
+     */
+    "static" => "public",
 
     /**
      * 是否开启后台
@@ -12,17 +22,5 @@ return [
     /**
      * 事件
      */
-    "event" => [
-        /**
-         * 指定使用的模块
-         */
-        "use" => "select",
-    ],
-
-    /**
-     * 内置命令
-     */
-    "commands" => [
-        ServerStartCommand::class,
-    ]
+    "event" => SelectEvent::class,
 ];
