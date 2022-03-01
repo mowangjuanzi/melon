@@ -44,6 +44,8 @@ class ServerStartCommand extends Command
 
         $stream = stream_socket_server($config['listen'], $err_code, $err_message);
 
+        $output->writeln("start listen: http://{$config['listen']}");
+
         // 设置 keepalive 和 禁用 Nagle 算法
 //        $socket = socket_import_stream(stream);
 //        socket_set_option($socket, SOL_SOCKET, SO_KEEPALIVE, 1);

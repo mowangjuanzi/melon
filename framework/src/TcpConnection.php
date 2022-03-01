@@ -20,5 +20,19 @@ class TcpConnection
     public function execute()
     {
         $request = new Request($this->conn, $this->remote_address);
+
+        // 执行路由解析
+        $action = Application::getInstance()->routing->dispatch($request->enumMethod(), $request->path());
+
+        $controller = new $action['action'][0];
+
+        $response = $controller->{$action['action'][1]}();
+
+        // 将返回的资源进行写入
+        $response->send($this->conn);
+
+        $this->application->event->remove($this->conn, EventEnum::READ);
+
+        stream_socket_shutdown($this->conn, STREAM_SHUT_WR);
     }
 }

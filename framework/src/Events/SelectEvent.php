@@ -58,6 +58,24 @@ class SelectEvent extends BaseEvent
         };
     }
 
+    public function remove(mixed $stream, EventEnum $eventEnum)
+    {
+        $fd = strval($stream);
+
+        unset($this->all[$fd][$eventEnum->name]);
+
+        switch ($eventEnum) {
+            case EventEnum::READ:
+                unset($this->read[$fd]);
+                break;
+            case EventEnum::WRITE:
+                unset($this->write[$fd]);
+                break;
+            case EventEnum::EXPECT:
+                unset($this->except[$fd]);
+        }
+    }
+
     /**
      * 循环
      * @return void
@@ -87,6 +105,8 @@ class SelectEvent extends BaseEvent
                 foreach ($this->read as $item) {
                     $fd = intval($item);
                     $this->all[$fd][EventEnum::READ->name][0]($item);
+
+                    // dd($this->read);
                 }
             }
         }

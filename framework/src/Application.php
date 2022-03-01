@@ -26,9 +26,15 @@ class Application extends ConsoleApplication
     public readonly BaseEvent $event;
 
     /**
+     * 路由
+     * @var Routing
+     */
+    public readonly Routing $routing;
+
+    /**
      * 版本号
      */
-    const Version = "0.1";
+    const VERSION = "0.1";
 
     /**
      * 基础目录
@@ -58,14 +64,17 @@ class Application extends ConsoleApplication
     {
         $this->basePath = $basePath;
 
-        parent::__construct("melon", self::Version);
+        parent::__construct("melon", self::VERSION);
 
         $this->setInstance();
 
         $this->loadConfig();
+
         $this->registerCommands();
 
         $this->registerEvent();
+
+        $this->loadRouting();
     }
 
     /**
@@ -120,6 +129,17 @@ class Application extends ConsoleApplication
             $output = new ConsoleOutput();
             $output->writeln('config "app.event" value is instance \Melon\Events\BaseEvent');
         }
+    }
+
+    protected function loadRouting()
+    {
+        $this->routing = new Routing();
+
+        $func = function ($routing) {
+            require $this->basePath . "/routes/web.php";
+        };
+
+        $func($this->routing);
     }
 
     /**
