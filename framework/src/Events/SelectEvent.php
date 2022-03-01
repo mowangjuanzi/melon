@@ -2,6 +2,7 @@
 
 namespace Melon\Events;
 
+use Closure;
 use Melon\Enums\EventEnum;
 use Throwable;
 
@@ -10,9 +11,28 @@ use Throwable;
  */
 class SelectEvent extends BaseEvent
 {
+    /**
+     * 所有的处理都要记录到这里，因为还要记录回调函数等
+     * @var array
+     */
     public array $all = [];
+
+    /**
+     * read 事件
+     * @var array
+     */
     public array $read = [];
+
+    /**
+     * write 事件
+     * @var array
+     */
     public array $write = [];
+
+    /**
+     * expect 事件
+     * @var array
+     */
     public array $except = [];
 
     public function __construct()
@@ -20,11 +40,16 @@ class SelectEvent extends BaseEvent
 
     }
 
-    public function add(mixed $stream, EventEnum $eventEnum)
+    public function add(mixed $stream, EventEnum $eventEnum, Closure $callback = null)
     {
         $fd = intval($stream);
 
-        $this->all[$fd][$eventEnum->name] = $stream;
+        $data = [
+            $callback,
+            $stream
+        ];
+
+        $this->all[$fd][$eventEnum->name] = $data;
 
         match ($eventEnum) {
             EventEnum::READ => ($this->read[$fd] = $stream),
@@ -60,7 +85,8 @@ class SelectEvent extends BaseEvent
 
             if ($this->read) {
                 foreach ($this->read as $item) {
-                    $this->acceptConnection($item);
+                    $fd = intval($item);
+                    $this->all[$fd][EventEnum::READ->name][0]($item);
                 }
             }
         }

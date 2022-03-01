@@ -2,9 +2,11 @@
 
 namespace Melon\Events;
 
+use Closure;
+use Melon\Enums\EventEnum;
 use Melon\TcpConnection;
 
-class BaseEvent
+abstract class BaseEvent
 {
     /**
      * 接受链接
@@ -19,6 +21,10 @@ class BaseEvent
             return ;
         }
 
+        stream_set_blocking($stream, false);
+
         $tcp = new TcpConnection($conn, $remote_address);
     }
+
+    public abstract function add(mixed $stream, EventEnum $eventEnum, Closure $callback = null);
 }

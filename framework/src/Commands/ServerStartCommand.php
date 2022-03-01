@@ -52,7 +52,7 @@ class ServerStartCommand extends Command
         // 设置非堵塞
         stream_set_blocking($stream, false);
 
-        $this->application->event->add($stream, EventEnum::READ);
+        $this->application->event->add($stream, EventEnum::READ, $this->application->event->acceptConnection(...));
 
         $this->application->event->loop();
 

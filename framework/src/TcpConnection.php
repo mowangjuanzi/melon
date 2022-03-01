@@ -2,10 +2,23 @@
 
 namespace Melon;
 
+use Melon\Enums\EventEnum;
+
 class TcpConnection
 {
-    public function __construct(private readonly mixed $conn, string $remote_address = '')
+    protected Application $application;
+
+    public function __construct(private readonly mixed $conn, private readonly string $remote_address = '')
     {
-        dd($this->conn, $remote_address);
+        $this->application = Application::getInstance();
+
+        stream_set_blocking($this->conn, false);
+
+        $this->application->event->add($this->conn, EventEnum::READ, $this->execute(...));
+    }
+
+    public function execute()
+    {
+        $request = new Request($this->conn, $this->remote_address);
     }
 }
