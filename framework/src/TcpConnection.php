@@ -21,6 +21,8 @@ class TcpConnection
     {
         $request = new Request($this->conn, $this->remote_address);
 
+        $this->application->event->remove($this->conn, EventEnum::READ);
+
         // 执行路由解析
         $action = Application::getInstance()->routing->dispatch($request->enumMethod(), $request->path());
 
@@ -30,8 +32,6 @@ class TcpConnection
 
         // 将返回的资源进行写入
         $response->send($this->conn);
-
-        $this->application->event->remove($this->conn, EventEnum::READ);
 
         stream_socket_shutdown($this->conn, STREAM_SHUT_WR);
     }

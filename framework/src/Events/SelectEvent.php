@@ -60,7 +60,7 @@ class SelectEvent extends BaseEvent
 
     public function remove(mixed $stream, EventEnum $eventEnum)
     {
-        $fd = strval($stream);
+        $fd = intval($stream);
 
         unset($this->all[$fd][$eventEnum->name]);
 
