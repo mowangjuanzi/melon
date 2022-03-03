@@ -85,9 +85,17 @@ class SelectEvent extends BaseEvent
         $result = false;
 
         while (1) {
-            if ($this->read || $this->write || $this->except) {
+            /**
+             * 因为 stream_select 会修改传入的参数的值，所以需要使用变量的赋值来避免这个问题
+             * https://cloud.tencent.com/developer/news/376119
+             */
+            $read = $this->read;
+            $write = $this->write;
+            $except = $this->except;
+
+            if ($read || $write || $except) {
                 try {
-                    $result = stream_select($this->read, $this->write, $this->except, 0, 100000000);
+                    $result = stream_select($read, $write, $except, 0, 100000000);
                 }catch (Throwable $e) {
                     dd($e);
                 }
@@ -97,16 +105,13 @@ class SelectEvent extends BaseEvent
             }
 
             if (!$result) {
-                dd("error");
                 continue;
             }
 
-            if ($this->read) {
-                foreach ($this->read as $item) {
+            if ($read) {
+                foreach ($read as $item) {
                     $fd = intval($item);
                     $this->all[$fd][EventEnum::READ->name][0]($item);
-
-                    // dd($this->read);
                 }
             }
         }

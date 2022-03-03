@@ -34,7 +34,7 @@ class Application extends ConsoleApplication
     /**
      * 版本号
      */
-    const VERSION = "0.1";
+    const VERSION = "0.0.2";
 
     /**
      * 基础目录

@@ -64,11 +64,21 @@ class Request
         $this->server['remote_port'] = $remote_address['port'];
     }
 
-    public function query()
+    /**
+     * GET 获取
+     * @param string $prefix
+     * @param string|array|null $default
+     * @return string|array|null
+     */
+    public function query(string $prefix, string|array|null $default = null): string|array|null
     {
-
+        return $this->query[$prefix] ?: $default;
     }
 
+    /**
+     * POST 获取
+     * @return void
+     */
     public function post()
     {
 
