@@ -2,11 +2,11 @@
 
 namespace Melon;
 
-use Melon\Enums\HttpMethod;
+use Melon\Enums\HttpMethodEnum;
 
 class Request
 {
-    private readonly HttpMethod $method;
+    private readonly HttpMethodEnum $method;
 
     private readonly string $uri;
 
@@ -39,8 +39,8 @@ class Request
 
         // 获取 http method
         $this->method = match (strtoupper($line[0])) {
-            HttpMethod::GET->name => HttpMethod::GET,
-            HttpMethod::POST->name => HttpMethod::POST,
+            HttpMethodEnum::GET->name => HttpMethodEnum::GET,
+            HttpMethodEnum::POST->name => HttpMethodEnum::POST,
         };
 
         // 获取 path 和 query
@@ -94,7 +94,7 @@ class Request
         return $this->enumMethod()->name;
     }
 
-    public function enumMethod(): HttpMethod
+    public function enumMethod(): HttpMethodEnum
     {
         return $this->method;
     }

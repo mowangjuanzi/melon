@@ -2,7 +2,7 @@
 
 namespace Melon\Enums;
 
-enum HttpMethod
+enum HttpMethodEnum
 {
     case GET;
     case HEAD;

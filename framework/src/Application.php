@@ -135,6 +135,8 @@ class Application extends ConsoleApplication
     {
         $this->routing = new Routing();
 
+        $this->routing->loadStaticResponse($this->basePath . "/public");
+
         $func = function ($routing) {
             require $this->basePath . "/routes/web.php";
         };
@@ -159,5 +161,26 @@ class Application extends ConsoleApplication
     public static function getInstance(): Application
     {
         return self::$instance;
+    }
+
+    /**
+     * 获取绝对路径
+     * @param string $path
+     * @return string
+     */
+    public function basePath(string $path = ''): string
+    {
+        return $this->basePath . ($path != '' ? DIRECTORY_SEPARATOR . $path : '');
+    }
+
+    /**
+     * Get the path to the public / web directory.
+     *
+     * @param string $path
+     * @return string
+     */
+    public function publicPath(string $path = ''): string
+    {
+        return $this->basePath("public/") . ($path != '' ? DIRECTORY_SEPARATOR . $path : '');
     }
 }

@@ -3,6 +3,8 @@
 namespace Melon;
 
 use Melon\Enums\EventEnum;
+use Melon\Enums\ResponseTypeEnum;
+use SplFileInfo;
 
 class TcpConnection
 {
@@ -26,12 +28,16 @@ class TcpConnection
         // 执行路由解析
         $action = Application::getInstance()->routing->dispatch($request->enumMethod(), $request->path());
 
-        $controller = new $action['action'][0];
+        // 目前只支持两种类型，一种是控制器，一种是静态文件
+        if ($action['type'] == ResponseTypeEnum::CONTROLLER) {
+            $controller = new $action['action'][0];
+            /** @var Response $response */
+            $response = $controller->{$action['action'][1]}();
+            stream_socket_sendto($this->conn, $response);
+        } else {
+            (new Response())->file(new SplFileInfo($this->application->publicPath($request->path())), $this->conn);
 
-        $response = $controller->{$action['action'][1]}();
-
-        // 将返回的资源进行写入
-        $response->send($this->conn);
+        }
 
         stream_socket_shutdown($this->conn, STREAM_SHUT_WR);
     }

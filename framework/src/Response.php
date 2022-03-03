@@ -2,25 +2,42 @@
 
 namespace Melon;
 
-class Response
-{
-    public function __construct(protected string $content = '')
-    {
+use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
+class Response extends SymfonyResponse
+{
+    public function __construct(?string $content = '', int $status = 200, array $headers = [])
+    {
+        parent::__construct($content, $status, $headers);
+
+        $this->headers->set("Server", "Melon/" . Application::VERSION);
+        $this->headers->set("Content-Length", strlen($content));
     }
 
     /**
-     * 发送内容
-     * @param mixed $conn
-     * @return void
+     * 资源响应
+     * @param \SplFileInfo $file
+     * @param resource $stream
+     * @return Response
      */
-    public function send(mixed $conn)
+    public function file(\SplFileInfo $file, mixed $stream): static
     {
-        $body_len = strlen($this->content);
+        if ($file->isReadable()) {
+            $charset = $this->charset ?: 'UTF-8';
+            $this->headers->set("Content-Length", $file->getSize());
+            $this->headers->set('Content-Type', mime_content_type($file->getPathname()) . '; charset=' . $charset);
+        } elseif ($file->isFile()) {
+            $this->setStatusCode(403);
+        } else {
+            $this->setStatusCode(404);
+        }
 
-        $response = $this->content;
+        stream_socket_sendto($stream, $this->__toString());
 
-        // 写入 header
-        stream_socket_sendto($conn, "HTTP/1.1 200 OK\r\nServer: Melon\r\nConnection: keep-alive\r\nContent-Type: text/html;charset=utf-8\r\nContent-Length: $body_len\r\n\r\n$response");
+        if ($file->isReadable()) {
+            stream_copy_to_stream(fopen($file->getPathname(), 'r'), $stream);
+        }
+
+        return $this;
     }
 }
