@@ -55,7 +55,7 @@ class Routing
         $this->routing->add($name ?: 'generate:' . Str::random(), $route);
     }
 
-    public function dispatch(HttpMethodEnum $method, string $uri = '')
+    public function dispatch(HttpMethodEnum $method, string $uri = ''): array
     {
         $matcher = new UrlMatcher($this->routing, new RequestContext('', $method->name));
 

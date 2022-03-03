@@ -2,6 +2,7 @@
 
 namespace Melon;
 
+use SplFileInfo;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 class Response extends SymfonyResponse
@@ -16,11 +17,11 @@ class Response extends SymfonyResponse
 
     /**
      * 资源响应
-     * @param \SplFileInfo $file
+     * @param SplFileInfo $file
      * @param resource $stream
      * @return Response
      */
-    public function file(\SplFileInfo $file, mixed $stream): static
+    public function file(SplFileInfo $file, mixed $stream): static
     {
         if ($file->isReadable()) {
             $charset = $this->charset ?: 'UTF-8';
