@@ -4,7 +4,7 @@ namespace Melon;
 
 use Melon\Enums\EventEnum;
 use Melon\Enums\ResponseTypeEnum;
-use SplFileInfo;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class TcpConnection
 {
@@ -33,10 +33,17 @@ class TcpConnection
             $controller = new $action['action'][0];
             /** @var Response $response */
             $response = $controller->{$action['action'][1]}();
-            stream_socket_sendto($this->conn, $response);
         } else {
-            (new Response())->file(new SplFileInfo($this->application->publicPath($request->path())), $this->conn);
+            $response = (new Response())->file($this->application->publicPath($request->path()));
+        }
 
+        stream_socket_sendto($this->conn, $response);
+
+        // 对返回资源进行处理
+        if ($response instanceof BinaryFileResponse) {
+            $tmp = fopen($response->getFile()->getPathname(), 'r');
+            stream_copy_to_stream($tmp, $this->conn);
+            fclose($tmp);
         }
 
         stream_socket_shutdown($this->conn, STREAM_SHUT_WR);

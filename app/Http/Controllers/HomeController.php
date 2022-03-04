@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use Melon\Response;
+use Symfony\Component\HttpFoundation\Response;
 
 class HomeController
 {
     public function index(): Response
     {
-        return new Response("hello world");
+        return \response("hello world");
     }
 }
