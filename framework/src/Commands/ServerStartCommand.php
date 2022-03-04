@@ -5,7 +5,8 @@ namespace Melon\Commands;
 
 
 use Melon\Application;
-use Melon\Enums\EventEnum;
+use Melon\TcpConnection;
+use Revolt\EventLoop;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -44,7 +45,7 @@ class ServerStartCommand extends Command
 
         $stream = stream_socket_server($config['listen'], $err_code, $err_message);
 
-        $output->writeln("start listen: http://{$config['listen']}");
+        $output->writeln("Visit http://{$config['listen']}/ in your browser.");
 
         // 设置 keepalive 和 禁用 Nagle 算法
 //        $socket = socket_import_stream(stream);
@@ -54,9 +55,18 @@ class ServerStartCommand extends Command
         // 设置非堵塞
         stream_set_blocking($stream, false);
 
-        $this->application->event->add($stream, EventEnum::READ, $this->application->event->acceptConnection(...));
+        EventLoop::onReadable($stream, function ($watcher, $stream) {
+            $conn = stream_socket_accept($stream, 0, $remote_address);
 
-        $this->application->event->loop();
+            if (!is_resource($conn) || @feof($conn)) {
+                EventLoop::cancel($watcher);
+            } else {
+                $tcp = new TcpConnection($conn, $remote_address);
+                $tcp->execute();
+            }
+        });
+
+        EventLoop::run();
 
         return self::SUCCESS;
     }

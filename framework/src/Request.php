@@ -33,9 +33,14 @@ class Request
      */
     public function __construct(private readonly mixed $conn, string $remote_address = '')
     {
-        $line = stream_get_line($this->conn, 2048, "\n");
+        do {
+            $line = stream_get_line($this->conn, 2048, "\r\n");
+            if ($line === false) { // 如果返回 false，说明这个时候还没有复制过来数据，稍微等一小会
+                usleep(200);
+            }
+        } while($line === false);
 
-        $line = explode(" ", $line);
+        $line = explode(" ", trim($line));
 
         // 获取 http method
         $this->method = match (strtoupper($line[0])) {

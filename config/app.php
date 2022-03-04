@@ -1,7 +1,5 @@
 <?php
 
-use Melon\Events\SelectEvent;
-
 return [
 
     /**
@@ -18,11 +16,6 @@ return [
      * 是否开启后台
      */
     "daemon" => false,
-
-    /**
-     * 事件
-     */
-    "event" => SelectEvent::class,
 
     /**
      * 静态文件资源缓存时间，单位为秒

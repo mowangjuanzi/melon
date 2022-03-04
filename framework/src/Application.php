@@ -6,10 +6,10 @@ namespace Melon;
 
 use FilesystemIterator;
 use Melon\Commands\ServerStartCommand;
-use Melon\Events\BaseEvent;
 use RecursiveDirectoryIterator;
+use Revolt\EventLoop;
+use Revolt\EventLoop\Driver;
 use Symfony\Component\Console\Application as ConsoleApplication;
-use Symfony\Component\Console\Output\ConsoleOutput;
 
 class Application extends ConsoleApplication
 {
@@ -18,12 +18,6 @@ class Application extends ConsoleApplication
      * @var Application
      */
     protected static Application $instance;
-
-    /**
-     * 事件
-     * @var BaseEvent
-     */
-    public readonly BaseEvent $event;
 
     /**
      * 路由
@@ -122,12 +116,8 @@ class Application extends ConsoleApplication
     protected function registerEvent()
     {
         $event = $this->getConfig("app.event");
-
-        if (is_subclass_of($event, BaseEvent::class)) {
-            $this->event = new $event;
-        } else {
-            $output = new ConsoleOutput();
-            $output->writeln('config "app.event" value is instance \Melon\Events\BaseEvent');
+        if ($event instanceof Driver) {
+            EventLoop::setDriver(new $event);
         }
     }
 

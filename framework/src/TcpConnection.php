@@ -2,28 +2,19 @@
 
 namespace Melon;
 
-use Melon\Enums\EventEnum;
 use Melon\Enums\ResponseTypeEnum;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class TcpConnection
 {
-    protected Application $application;
-
     public function __construct(private readonly mixed $conn, private readonly string $remote_address = '')
     {
-        $this->application = Application::getInstance();
 
-        stream_set_blocking($this->conn, false);
-
-        $this->application->event->add($this->conn, EventEnum::READ, $this->execute(...));
     }
 
     public function execute()
     {
         $request = new Request($this->conn, $this->remote_address);
-
-        $this->application->event->remove($this->conn, EventEnum::READ);
 
         // 执行路由解析
         $action = Application::getInstance()->routing->dispatch($request->enumMethod(), $request->path());
@@ -34,7 +25,7 @@ class TcpConnection
             /** @var Response $response */
             $response = $controller->{$action['action'][1]}();
         } else {
-            $response = (new Response())->file($this->application->publicPath($request->path()));
+            $response = (new Response())->file(Application::getInstance()->publicPath($request->path()));
         }
 
         stream_socket_sendto($this->conn, $response);
