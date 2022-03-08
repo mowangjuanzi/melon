@@ -6,6 +6,8 @@ namespace Melon;
 
 use FilesystemIterator;
 use Melon\Commands\ServerStartCommand;
+use Monolog\Handler\RotatingFileHandler;
+use Monolog\Logger;
 use RecursiveDirectoryIterator;
 use Revolt\EventLoop;
 use Revolt\EventLoop\Driver;
@@ -14,36 +16,47 @@ use Symfony\Component\Console\Application as ConsoleApplication;
 class Application extends ConsoleApplication
 {
     /**
-     * 应用常驻
+     * shared application.
      * @var Application
      */
     protected static Application $instance;
 
     /**
-     * 路由
+     * routing collection.
      * @var Routing
      */
     public readonly Routing $routing;
 
     /**
-     * 版本号
+     * logging.
+     * @var Logger
      */
-    const VERSION = "0.0.2";
+    protected readonly Logger $logger;
 
     /**
-     * 基础目录
+     * version number.
+     */
+    public const VERSION = "0.0.2";
+
+    /**
+     * application name.
+     */
+    public const NAME = "melon";
+
+    /**
+     * base path.
      * @var string
      */
     protected string $basePath = '';
 
     /**
-     * 配置
+     * config.
      * @var array
      */
     protected array $config = [];
 
     /**
-     * 内置命令列表
+     * buildin command array.
      * @var array|string[]
      */
     protected array $commands = [
@@ -51,7 +64,7 @@ class Application extends ConsoleApplication
     ];
 
     /**
-     * 构造器
+     * constructor.
      * @param string $basePath
      */
     public function __construct(string $basePath)
@@ -66,13 +79,17 @@ class Application extends ConsoleApplication
 
         $this->registerCommands();
 
+        $this->initLogger();
+
         $this->registerEvent();
 
         $this->loadRouting();
+
+        cli_set_process_title(sprintf("%s main process", self::NAME));
     }
 
     /**
-     * 加载配置
+     * load config.
      */
     protected function loadConfig()
     {
@@ -85,7 +102,7 @@ class Application extends ConsoleApplication
     }
 
     /**
-     * 获取配置
+     * fetch config.
      * @param string $path
      * @return mixed
      */
@@ -100,7 +117,7 @@ class Application extends ConsoleApplication
     }
 
     /**
-     * 注册命令
+     * register commands.
      */
     protected function registerCommands()
     {
@@ -110,7 +127,7 @@ class Application extends ConsoleApplication
     }
 
     /**
-     * 注册事件
+     * register event loop.
      * @return void
      */
     protected function registerEvent()
@@ -121,6 +138,10 @@ class Application extends ConsoleApplication
         }
     }
 
+    /**
+     * route is instantiated and load config file.
+     * @return void
+     */
     protected function loadRouting()
     {
         $this->routing = new Routing();
@@ -135,7 +156,22 @@ class Application extends ConsoleApplication
     }
 
     /**
-     * 设置实例
+     * init logger.
+     * @return void
+     */
+    protected function initLogger()
+    {
+        $this->logger = new Logger(self::NAME);
+
+        $logging = $this->getConfig("logging");
+
+        $handler = new RotatingFileHandler($logging['path'], 2,  $logging['level'], true, 0622);
+
+        $this->logger->pushHandler($handler);
+    }
+
+    /**
+     * set shared instance.
      * @return bool
      */
     protected function setInstance(): bool
@@ -145,7 +181,7 @@ class Application extends ConsoleApplication
     }
 
     /**
-     * 获取共享实例
+     * get shared instance.
      * @return Application
      */
     public static function getInstance(): Application
@@ -154,7 +190,7 @@ class Application extends ConsoleApplication
     }
 
     /**
-     * 获取绝对路径
+     * get absolute path.
      * @param string $path
      * @return string
      */
@@ -164,13 +200,23 @@ class Application extends ConsoleApplication
     }
 
     /**
-     * Get the path to the public / web directory.
+     * Get the path to the public directory.
      *
      * @param string $path
      * @return string
      */
     public function publicPath(string $path = ''): string
     {
-        return $this->basePath("public/") . ($path != '' ? DIRECTORY_SEPARATOR . $path : '');
+        return $this->basePath("public") . ($path != '' ? DIRECTORY_SEPARATOR . $path : '');
+    }
+
+    /**
+     * get the path to storage directory.
+     * @param string $path
+     * @return string
+     */
+    public function storagePath(string $path = ''): string
+    {
+        return $this->basePath("storage") . ($path != '' ? DIRECTORY_SEPARATOR . $path : '');
     }
 }
