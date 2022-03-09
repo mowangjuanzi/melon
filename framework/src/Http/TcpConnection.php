@@ -1,8 +1,9 @@
 <?php
 
-namespace Melon;
+namespace Melon\Http;
 
-use Melon\Enums\ResponseTypeEnum;
+use Melon\Foundation\Application;
+use Melon\Http\Enums\ResponseTypeEnum;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class TcpConnection

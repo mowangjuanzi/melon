@@ -1,7 +1,7 @@
 <?php
 
-use Melon\Application;
-use Melon\Response;
+use Melon\Foundation\Application;
+use Melon\Http\Response;
 
 if (!function_exists("app")) {
 

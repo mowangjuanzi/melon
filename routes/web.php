@@ -1,7 +1,7 @@
 <?php
 
 use App\Http\Controllers\HomeController;
-use Melon\Routing;
+use Melon\Routing\Routing;
 
 /** @var Routing $routing */
 

@@ -28,7 +28,7 @@
             "Melon\\": "framework/src"
         },
         "files": [
-            "framework/src/helpers.php"
+            "framework/src/Foundation/helpers.php"
         ]
     },
     "config": {

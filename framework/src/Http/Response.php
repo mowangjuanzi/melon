@@ -1,7 +1,8 @@
 <?php
 
-namespace Melon;
+namespace Melon\Http;
 
+use Melon\Foundation\Application;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;

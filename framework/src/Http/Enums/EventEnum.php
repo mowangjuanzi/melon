@@ -1,6 +1,6 @@
 <?php
 
-namespace Melon\Enums;
+namespace Melon\Http\Enums;
 
 enum EventEnum
 {

@@ -1,11 +1,11 @@
 <?php
 
 
-namespace Melon\Commands;
+namespace Melon\Http\Console;
 
 
-use Melon\Application;
-use Melon\TcpConnection;
+use Melon\Foundation\Application;
+use Melon\Http\TcpConnection;
 use Revolt\EventLoop;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;

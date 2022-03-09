@@ -1,8 +1,9 @@
 <?php
 
-namespace Melon;
+namespace Melon\Http;
 
-use Melon\Enums\HttpMethodEnum;
+use Melon\Foundation\Application;
+use Melon\Http\Enums\HttpMethodEnum;
 
 class Request
 {

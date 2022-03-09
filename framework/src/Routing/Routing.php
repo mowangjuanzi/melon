@@ -1,10 +1,10 @@
 <?php
 
-namespace Melon;
+namespace Melon\Routing;
 
 use JetBrains\PhpStorm\Pure;
-use Melon\Enums\HttpMethodEnum;
-use Melon\Enums\ResponseTypeEnum;
+use Melon\Http\Enums\HttpMethodEnum;
+use Melon\Http\Enums\ResponseTypeEnum;
 use Melon\Supports\Str;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Routing\Matcher\UrlMatcher;
