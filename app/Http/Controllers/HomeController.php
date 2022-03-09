@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Symfony\Component\HttpFoundation\Response;
 
-class HomeController
+class HomeController extends Controller
 {
     public function index(): Response
     {

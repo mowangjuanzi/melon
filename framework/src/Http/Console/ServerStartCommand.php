@@ -4,30 +4,17 @@
 namespace Melon\Http\Console;
 
 
-use Melon\Foundation\Application;
+use Melon\Console\Command;
 use Melon\Http\TcpConnection;
 use Revolt\EventLoop;
-use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
 class ServerStartCommand extends Command
 {
-    protected Application $application;
+    protected ?string $name = 'start';
 
-    public function __construct(string $name = null)
-    {
-        parent::__construct($name);
-
-        $this->application = Application::getInstance();
-    }
-
-    protected static $defaultName = 'start';
-
-    protected function configure()
-    {
-        $this->setDescription('start web server on cli mode');
-    }
+    protected string $description = "start web server on cli mode";
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
@@ -41,7 +28,7 @@ class ServerStartCommand extends Command
         // SO_REUSEPORT https://www.cnblogs.com/anker/p/7076537.html
         stream_context_set_option($context, "socket", 'so_reuseport', 1);
 
-        $config = $this->application->getConfig("app");
+        $config = app()->getConfig("app");
 
         $stream = stream_socket_server($config['listen'], $err_code, $err_message);
 

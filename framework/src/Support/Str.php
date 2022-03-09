@@ -1,6 +1,6 @@
 <?php
 
-namespace Melon\Supports;
+namespace Melon\Support;
 
 class Str
 {

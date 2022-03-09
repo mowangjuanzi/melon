@@ -233,4 +233,19 @@ abstract class Container
 
         return $results;
     }
+
+    /**
+     * Call the given Closure / class@method and inject its dependencies.
+     *
+     * @param callable|string $callback
+     * @param  array<string, mixed>  $parameters
+     * @param string|null $defaultMethod
+     * @return mixed
+     *
+     * @throws \InvalidArgumentException
+     */
+    public function call(callable|string $callback, array $parameters = [], string $defaultMethod = null): mixed
+    {
+        return BoundMethod::call($this, $callback, $parameters, $defaultMethod);
+    }
 }

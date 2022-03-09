@@ -5,7 +5,7 @@ namespace Melon\Routing;
 use JetBrains\PhpStorm\Pure;
 use Melon\Http\Enums\HttpMethodEnum;
 use Melon\Http\Enums\ResponseTypeEnum;
-use Melon\Supports\Str;
+use Melon\Support\Str;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Routing\Matcher\UrlMatcher;
 use Symfony\Component\Routing\RequestContext;

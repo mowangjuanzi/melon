@@ -6,8 +6,13 @@ namespace Melon\Foundation;
 
 use FilesystemIterator;
 use LogicException;
+use Melon\Collections\Arr;
 use Melon\Container\Container;
+use Melon\Events\EventServiceProvider;
+use Melon\Log\LogServiceProvider;
 use Melon\Routing\Routing;
+use Melon\Routing\RoutingServiceProvider;
+use Melon\Support\ServiceProvider;
 use Monolog\Handler\RotatingFileHandler;
 use Monolog\Logger;
 use RecursiveDirectoryIterator;
@@ -45,6 +50,27 @@ class Application extends Container
     protected readonly string $basePath;
 
     /**
+     * Indicates if the application has "booted".
+     *
+     * @var bool
+     */
+    protected bool $booted = false;
+
+    /**
+     * All the registered service providers.
+     *
+     * @var ServiceProvider[]
+     */
+    protected array $serviceProviders = [];
+
+    /**
+     * The names of the loaded service providers.
+     *
+     * @var array
+     */
+    protected array $loadedProviders = [];
+
+    /**
      * config.
      * @var array
      */
@@ -59,6 +85,7 @@ class Application extends Container
         $this->setBasePath($basePath);
 
         $this->registerBaseBindings();
+        $this->registerBaseServiceProviders();
         $this->registerCoreContainerAliases();
 
         $this->loadConfig();
@@ -101,6 +128,126 @@ class Application extends Container
         $this->instance('path.storage', $this->storagePath());
         $this->instance('path.resources', $this->resourcePath());
         $this->instance('path.bootstrap', $this->bootstrapPath());
+    }
+
+    /**
+     * Register all the base service providers.
+     *
+     * @return void
+     */
+    protected function registerBaseServiceProviders()
+    {
+        $this->register(new EventServiceProvider($this));
+        $this->register(new LogServiceProvider($this));
+        $this->register(new RoutingServiceProvider($this));
+    }
+
+    /**
+     * Register a service provider with the application.
+     *
+     * @param ServiceProvider $provider
+     * @param bool $force
+     * @return ServiceProvider
+     */
+    public function register(ServiceProvider $provider, bool $force = false): ServiceProvider
+    {
+        if (($registered = $this->getProvider($provider)) && ! $force) {
+            return $registered;
+        }
+
+        $provider->register();
+
+        // If there are bindings / singletons set as properties on the provider we
+        // will spin through them and register them with the application, which
+        // serves as a convenience layer while registering a lot of bindings.
+        if (property_exists($provider, 'bindings')) {
+            foreach ($provider->bindings as $key => $value) {
+                $this->bind($key, $value);
+            }
+        }
+
+        if (property_exists($provider, 'singletons')) {
+            foreach ($provider->singletons as $key => $value) {
+                $this->singleton($key, $value);
+            }
+        }
+
+        $this->markAsRegistered($provider);
+
+        // If the application has already booted, we will call this boot method on
+        // the provider class, so it has an opportunity to do its boot logic and
+        // will be ready for any usage by this developer's application logic.
+        if ($this->isBooted()) {
+            $this->bootProvider($provider);
+        }
+
+        return $provider;
+    }
+
+    /**
+     * Get the registered service provider instance if it exists.
+     *
+     * @param ServiceProvider $provider
+     * @return ServiceProvider|null
+     */
+    public function getProvider(ServiceProvider $provider): ?ServiceProvider
+    {
+        return array_values($this->getProviders($provider))[0] ?? null;
+    }
+
+    /**
+     * Get the registered service provider instances if any exist.
+     *
+     * @param ServiceProvider $provider
+     * @return array
+     */
+    public function getProviders(ServiceProvider $provider): array
+    {
+        $name = get_class($provider);
+
+        return Arr::where($this->serviceProviders, function ($value) use ($name) {
+            return $value instanceof $name;
+        });
+    }
+
+    /**
+     * Mark the given provider as registered.
+     *
+     * @param ServiceProvider $provider
+     * @return void
+     */
+    protected function markAsRegistered(ServiceProvider $provider)
+    {
+        $this->serviceProviders[] = $provider;
+
+        $this->loadedProviders[get_class($provider)] = true;
+    }
+
+    /**
+     * Boot the given service provider.
+     *
+     * @param  ServiceProvider  $provider
+     * @return void
+     */
+    protected function bootProvider(ServiceProvider $provider)
+    {
+        $provider->callBootingCallbacks();
+
+        if (method_exists($provider, 'boot')) {
+            $this->call([$provider, 'boot']);
+        }
+
+        $provider->callBootedCallbacks();
+    }
+
+    /**
+     * Determine if the application has booted.
+     *
+     * @return bool
+     */
+    public function isBooted(): bool
+    {
+        return $this->booted;
     }
 
     /**
@@ -245,7 +392,7 @@ class Application extends Container
     }
 
     /**
-     * Get the path to the resources directory.
+     * Get the path to the resources' directory.
      *
      * @param string $path
      * @return string
