@@ -131,7 +131,6 @@ abstract class Container
      * @param string $abstract
      * @param array $parameters
      * @return mixed
-     * @throws BindingResolutionException
      */
     public function make(string $abstract, array $parameters = []): mixed
     {

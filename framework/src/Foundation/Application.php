@@ -42,7 +42,7 @@ class Application extends Container
      * base path.
      * @var string
      */
-    protected string $basePath = '';
+    protected readonly string $basePath;
 
     /**
      * config.
@@ -56,7 +56,7 @@ class Application extends Container
      */
     public function __construct(string $basePath)
     {
-        $this->basePath = $basePath;
+        $this->setBasePath($basePath);
 
         $this->registerBaseBindings();
         $this->registerCoreContainerAliases();
@@ -70,6 +70,37 @@ class Application extends Container
         $this->loadRouting();
 
         cli_set_process_title(sprintf("%s main process", self::NAME));
+    }
+
+    /**
+     * Set the base path for the application.
+     *
+     * @param string $basePath
+     * @return Application
+     */
+    public function setBasePath(string $basePath): static
+    {
+        $this->basePath = rtrim($basePath, '\/');
+
+        $this->bindPathsInContainer();
+
+        return $this;
+    }
+
+    /**
+     * Bind all the application paths in the container.
+     *
+     * @return void
+     */
+    protected function bindPathsInContainer()
+    {
+        $this->instance('path', $this->path());
+        $this->instance('path.base', $this->basePath());
+        $this->instance('path.config', $this->configPath());
+        $this->instance('path.public', $this->publicPath());
+        $this->instance('path.storage', $this->storagePath());
+        $this->instance('path.resources', $this->resourcePath());
+        $this->instance('path.bootstrap', $this->bootstrapPath());
     }
 
     /**
@@ -168,6 +199,41 @@ class Application extends Container
     }
 
     /**
+     * Get the path to the bootstrap directory.
+     *
+     * @param string $path
+     * @return string
+     */
+    public function bootstrapPath(string $path = ''): string
+    {
+        return $this->basePath . DIRECTORY_SEPARATOR . 'bootstrap' . ($path != '' ? DIRECTORY_SEPARATOR . $path : '');
+    }
+
+    /**
+     * Get the path to the application configuration files.
+     *
+     * @param string $path
+     * @return string
+     */
+    public function configPath(string $path = ''): string
+    {
+        return $this->basePath . DIRECTORY_SEPARATOR . 'config' . ($path != '' ? DIRECTORY_SEPARATOR . $path : '');
+    }
+
+    /**
+     * Get the path to the application "app" directory.
+     *
+     * @param string $path
+     * @return string
+     */
+    public function path(string $path = ''): string
+    {
+        $appPath = $this->basePath . DIRECTORY_SEPARATOR . 'app';
+
+        return $appPath . ($path != '' ? DIRECTORY_SEPARATOR . $path : '');
+    }
+
+    /**
      * Get the path to the public directory.
      *
      * @param string $path
@@ -175,7 +241,18 @@ class Application extends Container
      */
     public function publicPath(string $path = ''): string
     {
-        return $this->basePath("public") . ($path != '' ? DIRECTORY_SEPARATOR . $path : '');
+        return $this->basePath . DIRECTORY_SEPARATOR . 'public' . ($path != '' ? DIRECTORY_SEPARATOR . $path : '');
+    }
+
+    /**
+     * Get the path to the resources directory.
+     *
+     * @param string $path
+     * @return string
+     */
+    public function resourcePath(string $path = ''): string
+    {
+        return $this->basePath . DIRECTORY_SEPARATOR . 'resources' . ($path != '' ? DIRECTORY_SEPARATOR . $path : '');
     }
 
     /**
@@ -185,7 +262,7 @@ class Application extends Container
      */
     public function storagePath(string $path = ''): string
     {
-        return $this->basePath("storage") . ($path != '' ? DIRECTORY_SEPARATOR . $path : '');
+        return $this->basePath . DIRECTORY_SEPARATOR . 'storage' . ($path != '' ? DIRECTORY_SEPARATOR . $path : '');
     }
 
     /**
