@@ -5,23 +5,17 @@ namespace Melon\Foundation;
 
 
 use FilesystemIterator;
-use Melon\Http\Console\ServerStartCommand;
+use LogicException;
+use Melon\Container\Container;
 use Melon\Routing\Routing;
 use Monolog\Handler\RotatingFileHandler;
 use Monolog\Logger;
 use RecursiveDirectoryIterator;
 use Revolt\EventLoop;
 use Revolt\EventLoop\Driver;
-use Symfony\Component\Console\Application as ConsoleApplication;
 
-class Application extends ConsoleApplication
+class Application extends Container
 {
-    /**
-     * shared application.
-     * @var Application
-     */
-    protected static Application $instance;
-
     /**
      * routing collection.
      * @var Routing
@@ -57,14 +51,6 @@ class Application extends ConsoleApplication
     protected array $config = [];
 
     /**
-     * buildin command array.
-     * @var array|string[]
-     */
-    protected array $commands = [
-        ServerStartCommand::class,
-    ];
-
-    /**
      * constructor.
      * @param string $basePath
      */
@@ -72,13 +58,10 @@ class Application extends ConsoleApplication
     {
         $this->basePath = $basePath;
 
-        parent::__construct("melon", self::VERSION);
-
-        $this->setInstance();
+        $this->registerBaseBindings();
+        $this->registerCoreContainerAliases();
 
         $this->loadConfig();
-
-        $this->registerCommands();
 
         $this->initLogger();
 
@@ -115,16 +98,6 @@ class Application extends ConsoleApplication
         }
 
         return $config;
-    }
-
-    /**
-     * register commands.
-     */
-    protected function registerCommands()
-    {
-        foreach ($this->commands as $item) {
-            $this->add(new $item);
-        }
     }
 
     /**
@@ -175,19 +148,13 @@ class Application extends ConsoleApplication
      * set shared instance.
      * @return bool
      */
-    protected function setInstance(): bool
+    protected function registerBaseBindings(): bool
     {
-        self::$instance = $this;
-        return true;
-    }
+        static::setInstance($this);
 
-    /**
-     * get shared instance.
-     * @return Application
-     */
-    public static function getInstance(): Application
-    {
-        return self::$instance;
+        $this->instance('app', $this);
+
+        return true;
     }
 
     /**
@@ -219,5 +186,41 @@ class Application extends ConsoleApplication
     public function storagePath(string $path = ''): string
     {
         return $this->basePath("storage") . ($path != '' ? DIRECTORY_SEPARATOR . $path : '');
+    }
+
+    /**
+     * Register the core class aliases in the container.
+     *
+     * @return void
+     */
+    public function registerCoreContainerAliases()
+    {
+        foreach ([
+                     "app" => [self::class],
+                 ] as $key => $aliases) {
+            foreach ($aliases as $alias) {
+                $this->alias($key, $alias);
+            }
+        }
+    }
+
+    /**
+     * Alias a type to a different name.
+     *
+     * @param string $abstract
+     * @param string $alias
+     * @return void
+     *
+     * @throws LogicException
+     */
+    public function alias(string $abstract, string $alias)
+    {
+        if ($alias === $abstract) {
+            throw new LogicException("[$abstract] is aliased to itself.");
+        }
+
+        $this->aliases[$alias] = $abstract;
+
+        $this->abstractAliases[$abstract][] = $alias;
     }
 }

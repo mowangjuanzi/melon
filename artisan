@@ -5,6 +5,10 @@ use Melon\Foundation\Application;
 
 require_once __DIR__ . "/vendor/autoload.php";
 
-$application = new Application(__DIR__);
+/** @var Application $application */
+$application = require_once __DIR__ . "/bootstrap/app.php";
 
-$application->run();
+/** @var App\Console\Kernel $kernel */
+$kernel = $application->make(App\Console\Kernel::class);
+
+$kernel->run();

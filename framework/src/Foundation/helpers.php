@@ -5,8 +5,19 @@ use Melon\Http\Response;
 
 if (!function_exists("app")) {
 
-    function app(): Application {
-        return Application::getInstance();
+    /**
+     * 获取可用的容器实例。
+     *
+     * @param string|null $abstract
+     * @param array $parameters
+     * @return Application
+     */
+    function app(string $abstract = null, array $parameters = []): Application {
+        if (is_null($abstract)) {
+            return Application::getInstance();
+        }
+
+        return Application::getInstance()->make($abstract, $parameters);
     }
 }
 
