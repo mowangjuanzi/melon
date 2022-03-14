@@ -8,6 +8,6 @@ class HomeController extends Controller
 {
     public function index(): Response
     {
-        return \response("hello world");
+        return \response("hi, current datetime is " . date("Y-m-d H:i:s"));
     }
 }

@@ -13,6 +13,8 @@ class Request
 
     private readonly array $query;
 
+    private bool $booted = false;
+
     /**
      * 客户端发来的 header
      * @var array|string[]
@@ -34,12 +36,11 @@ class Request
      */
     public function __construct(private readonly mixed $conn, string $remote_address = '')
     {
-        do {
-            $line = stream_get_line($this->conn, 2048, "\r\n");
-            if ($line === false) { // 如果返回 false，说明这个时候还没有复制过来数据，稍微等一小会
-                usleep(200);
-            }
-        } while($line === false);
+        $line = stream_get_line($this->conn, 2048, "\r\n");
+
+        if (!is_string($line)) {
+            return ;
+        }
 
         $line = explode(" ", trim($line));
 
@@ -68,6 +69,8 @@ class Request
         $remote_address = parse_url($remote_address);
         $this->server["remote_host"] = $remote_address['host'];
         $this->server['remote_port'] = $remote_address['port'];
+
+        $this->booted = true;
     }
 
     /**
@@ -134,5 +137,13 @@ class Request
         if (empty($this->server('request_id'))) {
             $this->server['request_id'] = sprintf("%08x%08x%08x%08x", mt_rand(), mt_rand(), mt_rand(), mt_rand());
         }
+    }
+
+    /**
+     * @return bool
+     */
+    public function isBooted(): bool
+    {
+        return $this->booted;
     }
 }

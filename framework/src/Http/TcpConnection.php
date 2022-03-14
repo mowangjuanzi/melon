@@ -4,6 +4,7 @@ namespace Melon\Http;
 
 use Melon\Foundation\Application;
 use Melon\Http\Enums\ResponseTypeEnum;
+use Revolt\EventLoop;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class TcpConnection
@@ -17,6 +18,12 @@ class TcpConnection
     {
         $request = new Request($this->conn, $this->remote_address);
 
+        if (!$request->isBooted()) {
+            stream_socket_shutdown($this->conn, STREAM_SHUT_WR);
+            fclose($this->conn);
+            return ;
+        }
+
         // 执行路由解析
         $action = Application::getInstance()->routing->dispatch($request->enumMethod(), $request->path());
 
@@ -29,15 +36,19 @@ class TcpConnection
             $response = (new Response())->file(Application::getInstance()->publicPath($request->path()));
         }
 
-        stream_socket_sendto($this->conn, $response);
+        EventLoop::onWritable($this->conn, function ($watcher, $conn) use($response) {
+            stream_socket_sendto($this->conn, $response);
 
-        // 对返回资源进行处理
-        if ($response instanceof BinaryFileResponse) {
-            $tmp = fopen($response->getFile()->getPathname(), 'r');
-            stream_copy_to_stream($tmp, $this->conn);
-            fclose($tmp);
-        }
+            // 对返回资源进行处理
+            if ($response instanceof BinaryFileResponse) {
+                $tmp = fopen($response->getFile()->getPathname(), 'r');
+                stream_copy_to_stream($tmp, $this->conn);
+                fclose($tmp);
+            }
 
-        stream_socket_shutdown($this->conn, STREAM_SHUT_WR);
+            stream_socket_shutdown($this->conn, STREAM_SHUT_WR);
+            fclose($this->conn);
+            EventLoop::cancel($watcher);
+        });
     }
 }

@@ -44,13 +44,8 @@ class ServerStartCommand extends Command
 
         EventLoop::onReadable($stream, function ($watcher, $stream) {
             $conn = stream_socket_accept($stream, 0, $remote_address);
-
-            if (!is_resource($conn) || @feof($conn)) {
-                EventLoop::cancel($watcher);
-            } else {
-                $tcp = new TcpConnection($conn, $remote_address);
-                $tcp->execute();
-            }
+            $tcp = new TcpConnection($conn, $remote_address);
+            $tcp->execute();
         });
 
         EventLoop::run();
