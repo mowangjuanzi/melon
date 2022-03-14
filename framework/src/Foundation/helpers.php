@@ -9,9 +9,9 @@ if (!function_exists("app")) {
      *
      * @param string|null $abstract
      * @param array $parameters
-     * @return Application
+     * @return Application|mixed
      */
-    function app(string $abstract = null, array $parameters = []): Application {
+    function app(string $abstract = null, array $parameters = []): mixed {
         if (is_null($abstract)) {
             return Application::getInstance();
         }

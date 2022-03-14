@@ -45,10 +45,7 @@ class Request
         $line = explode(" ", trim($line));
 
         // 获取 http method
-        $this->method = match (strtoupper($line[0])) {
-            HttpMethodEnum::GET->name => HttpMethodEnum::GET,
-            HttpMethodEnum::POST->name => HttpMethodEnum::POST,
-        };
+        $this->method = HttpMethodEnum::match($line[0]);
 
         // 获取 path 和 query
         $line[2] = parse_url($line[1]);

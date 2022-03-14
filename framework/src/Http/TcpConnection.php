@@ -2,16 +2,23 @@
 
 namespace Melon\Http;
 
+use App\Exceptions\Handler;
 use Melon\Foundation\Application;
 use Melon\Http\Enums\ResponseTypeEnum;
 use Revolt\EventLoop;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 class TcpConnection
 {
     public function __construct(private readonly mixed $conn, private readonly string $remote_address = '')
     {
-
+        // set error|exception handler
+        EventLoop::setErrorHandler(function (\Throwable $throwable) {
+            /** @var Handler $handler */
+            $handler = app(Handler::class);
+            $handler->render($throwable, $this);
+        });
     }
 
     public function execute()
@@ -36,18 +43,28 @@ class TcpConnection
             $response = (new Response())->file(Application::getInstance()->publicPath($request->path()));
         }
 
+        $this->send($response);
+    }
+
+    /**
+     * send header and data
+     * @param SymfonyResponse $response
+     * @return void
+     */
+    public function send(SymfonyResponse $response)
+    {
         EventLoop::onWritable($this->conn, function ($watcher, $conn) use($response) {
-            stream_socket_sendto($this->conn, $response);
+            stream_socket_sendto($conn, $response);
 
             // 对返回资源进行处理
             if ($response instanceof BinaryFileResponse) {
                 $tmp = fopen($response->getFile()->getPathname(), 'r');
-                stream_copy_to_stream($tmp, $this->conn);
+                stream_copy_to_stream($tmp, $conn);
                 fclose($tmp);
             }
 
-            stream_socket_shutdown($this->conn, STREAM_SHUT_WR);
-            fclose($this->conn);
+            stream_socket_shutdown($conn, STREAM_SHUT_WR);
+            fclose($conn);
             EventLoop::cancel($watcher);
         });
     }

@@ -19,6 +19,8 @@ $application->singleton(App\Console\Kernel::class);
 
 $application->singleton(App\Http\Kernel::class);
 
+$application->singleton(App\Exceptions\Handler::class);
+
 /*
 |--------------------------------------------------------------------------
 | Return The Application

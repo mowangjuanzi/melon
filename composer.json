@@ -15,7 +15,7 @@
         "revolt/event-loop": "^0.2.2",
         "symfony/console": "^6.0",
         "symfony/finder": "^6.0",
-        "symfony/http-foundation": "^6.0",
+        "symfony/http-kernel": "^6.0",
         "symfony/routing": "^6.0"
     },
     "require-dev": {

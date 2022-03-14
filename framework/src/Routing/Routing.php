@@ -39,7 +39,6 @@ class Routing
      * 注册 GET 请求
      * @param string $uri
      * @param array $action
-     * @return void
      */
     public function get(string $uri, array $action)
     {
@@ -50,7 +49,7 @@ class Routing
         $name = $action['as'] ?? null;
 
         // TODO http method 匹配
-        $route = new Route($uri, $action);
+        $route = new Route($uri, $action, [], [], '', [], ['GET']);
 
         $this->routing->add($name ?: 'generate:' . Str::random(), $route);
     }
