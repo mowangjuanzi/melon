@@ -9,6 +9,6 @@ require_once __DIR__ . "/vendor/autoload.php";
 $application = require_once __DIR__ . "/bootstrap/app.php";
 
 /** @var App\Console\Kernel $kernel */
-$kernel = $application->make(App\Console\Kernel::class);
+$kernel = $application->get(App\Console\Kernel::class);
 
 $kernel->run();

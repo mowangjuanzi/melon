@@ -3,6 +3,7 @@
 namespace Melon\Log;
 
 use Melon\Support\ServiceProvider;
+use Symfony\Component\DependencyInjection\Reference;
 
 class LogServiceProvider extends ServiceProvider
 {
@@ -13,8 +14,6 @@ class LogServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        $this->application->singleton('log', function ($app) {
-            return new LogManager($app);
-        });
+        $this->application->register("log", LogManager::class)->addArgument(new Reference("app"));
     }
 }

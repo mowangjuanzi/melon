@@ -5,7 +5,6 @@ namespace Melon\Foundation;
 
 
 use FilesystemIterator;
-use LogicException;
 use Melon\Collections\Arr;
 use Melon\Container\Container;
 use Melon\Events\EventServiceProvider;
@@ -50,25 +49,11 @@ class Application extends Container
     protected readonly string $basePath;
 
     /**
-     * Indicates if the application has "booted".
-     *
-     * @var bool
-     */
-    protected bool $booted = false;
-
-    /**
      * All the registered service providers.
      *
      * @var ServiceProvider[]
      */
     protected array $serviceProviders = [];
-
-    /**
-     * The names of the loaded service providers.
-     *
-     * @var array
-     */
-    protected array $loadedProviders = [];
 
     /**
      * config.
@@ -82,6 +67,8 @@ class Application extends Container
      */
     public function __construct(string $basePath)
     {
+        parent::__construct();
+
         $this->setBasePath($basePath);
 
         $this->registerBaseBindings();
@@ -121,13 +108,13 @@ class Application extends Container
      */
     protected function bindPathsInContainer()
     {
-        $this->instance('path', $this->path());
-        $this->instance('path.base', $this->basePath());
-        $this->instance('path.config', $this->configPath());
-        $this->instance('path.public', $this->publicPath());
-        $this->instance('path.storage', $this->storagePath());
-        $this->instance('path.resources', $this->resourcePath());
-        $this->instance('path.bootstrap', $this->bootstrapPath());
+//        $this->set('path', $this->path(...));
+//        $this->set('path.base', $this->basePath(...));
+//        $this->set('path.config', $this->configPath(...));
+//        $this->set('path.public', $this->publicPath(...));
+//        $this->set('path.storage', $this->storagePath(...));
+//        $this->set('path.resources', $this->resourcePath(...));
+//        $this->set('path.bootstrap', $this->bootstrapPath(...));
     }
 
     /**
@@ -137,49 +124,26 @@ class Application extends Container
      */
     protected function registerBaseServiceProviders()
     {
-        $this->register(new EventServiceProvider($this));
-        $this->register(new LogServiceProvider($this));
-        $this->register(new RoutingServiceProvider($this));
+        $this->service(new EventServiceProvider($this));
+        $this->service(new LogServiceProvider($this));
+        $this->service(new RoutingServiceProvider($this));
     }
 
     /**
      * Register a service provider with the application.
      *
      * @param ServiceProvider $provider
-     * @param bool $force
      * @return ServiceProvider
      */
-    public function register(ServiceProvider $provider, bool $force = false): ServiceProvider
+    public function service(ServiceProvider $provider): ServiceProvider
     {
-        if (($registered = $this->getProvider($provider)) && ! $force) {
+        if (($registered = $this->getProvider($provider))) {
             return $registered;
         }
 
         $provider->register();
 
-        // If there are bindings / singletons set as properties on the provider we
-        // will spin through them and register them with the application, which
-        // serves as a convenience layer while registering a lot of bindings.
-        if (property_exists($provider, 'bindings')) {
-            foreach ($provider->bindings as $key => $value) {
-                $this->bind($key, $value);
-            }
-        }
-
-        if (property_exists($provider, 'singletons')) {
-            foreach ($provider->singletons as $key => $value) {
-                $this->singleton($key, $value);
-            }
-        }
-
         $this->markAsRegistered($provider);
-
-        // If the application has already booted, we will call this boot method on
-        // the provider class, so it has an opportunity to do its boot logic and
-        // will be ready for any usage by this developer's application logic.
-        if ($this->isBooted()) {
-            $this->bootProvider($provider);
-        }
 
         return $provider;
     }
@@ -219,35 +183,6 @@ class Application extends Container
     protected function markAsRegistered(ServiceProvider $provider)
     {
         $this->serviceProviders[] = $provider;
-
-        $this->loadedProviders[get_class($provider)] = true;
-    }
-
-    /**
-     * Boot the given service provider.
-     *
-     * @param  ServiceProvider  $provider
-     * @return void
-     */
-    protected function bootProvider(ServiceProvider $provider)
-    {
-        $provider->callBootingCallbacks();
-
-        if (method_exists($provider, 'boot')) {
-            $this->call([$provider, 'boot']);
-        }
-
-        $provider->callBootedCallbacks();
-    }
-
-    /**
-     * Determine if the application has booted.
-     *
-     * @return bool
-     */
-    public function isBooted(): bool
-    {
-        return $this->booted;
     }
 
     /**
@@ -330,7 +265,7 @@ class Application extends Container
     {
         static::setInstance($this);
 
-        $this->instance('app', $this);
+        $this->set('app', $this);
 
         return true;
     }
@@ -423,28 +358,8 @@ class Application extends Container
                      "app" => [self::class],
                  ] as $key => $aliases) {
             foreach ($aliases as $alias) {
-                $this->alias($key, $alias);
+                $this->setAlias($alias, $key);
             }
         }
-    }
-
-    /**
-     * Alias a type to a different name.
-     *
-     * @param string $abstract
-     * @param string $alias
-     * @return void
-     *
-     * @throws LogicException
-     */
-    public function alias(string $abstract, string $alias)
-    {
-        if ($alias === $abstract) {
-            throw new LogicException("[$abstract] is aliased to itself.");
-        }
-
-        $this->aliases[$alias] = $abstract;
-
-        $this->abstractAliases[$abstract][] = $alias;
     }
 }

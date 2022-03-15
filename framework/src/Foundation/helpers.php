@@ -8,15 +8,15 @@ if (!function_exists("app")) {
      * 获取可用的容器实例。
      *
      * @param string|null $abstract
-     * @param array $parameters
      * @return Application|mixed
+     * @throws Exception
      */
-    function app(string $abstract = null, array $parameters = []): mixed {
+    function app(string $abstract = null): mixed {
         if (is_null($abstract)) {
             return Application::getInstance();
         }
 
-        return Application::getInstance()->make($abstract, $parameters);
+        return Application::getInstance()->get($abstract);
     }
 }
 

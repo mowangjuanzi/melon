@@ -3,6 +3,7 @@
 namespace Melon\Routing;
 
 use Melon\Support\ServiceProvider;
+use Symfony\Component\DependencyInjection\Reference;
 
 class RoutingServiceProvider extends ServiceProvider
 {
@@ -23,8 +24,6 @@ class RoutingServiceProvider extends ServiceProvider
      */
     protected function registerRouter()
     {
-        $this->application->singleton('router', function ($app) {
-            return new Router($app['events'], $app);
-        });
+        $this->application->register("router", Router::class)->addArgument(new Reference("events"))->addArgument(new Reference("app"));
     }
 }

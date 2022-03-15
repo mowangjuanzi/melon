@@ -3,6 +3,7 @@
 namespace Melon\Events;
 
 use Melon\Support\ServiceProvider;
+use Symfony\Component\EventDispatcher\EventDispatcher;
 
 class EventServiceProvider extends ServiceProvider
 {
@@ -13,10 +14,6 @@ class EventServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        $this->application->singleton('events', function ($app) {
-            return (new Dispatcher($app))->setQueueResolver(function () use ($app) {
-                return $app->make(QueueFactoryContract::class);
-            });
-        });
+        $this->application->register("events", EventDispatcher::class);
     }
 }

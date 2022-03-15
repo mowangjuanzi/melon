@@ -1,6 +1,7 @@
 <?php
 
 use Melon\Foundation\Application;
+use Symfony\Component\DependencyInjection\Reference;
 
 $application = new Application(dirname(__DIR__));
 
@@ -15,11 +16,11 @@ $application = new Application(dirname(__DIR__));
 |
 */
 
-$application->singleton(App\Console\Kernel::class);
+$application->register(App\Console\Kernel::class, App\Console\Kernel::class)->addArgument(new Reference("app"));
 
-$application->singleton(App\Http\Kernel::class);
+$application->register(App\Http\Kernel::class, App\Http\Kernel::class)->addArgument(new Reference("app"));
 
-$application->singleton(App\Exceptions\Handler::class);
+$application->register(App\Exceptions\Handler::class, App\Exceptions\Handler::class);
 
 /*
 |--------------------------------------------------------------------------
